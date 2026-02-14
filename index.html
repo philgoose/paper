@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="author" content="phil_goose">
+    <meta name="designer" content="Feelsogood^^">
+    <title>Justice Navigator - 실제 작동하는 법률 문서 플랫폼</title>
+    
+    <!-- CDN 라이브러리 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;700&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+    
+    <style>
+        /* phil_goose & Feelsogood^^ Design System */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            color: #e8e8e8;
+            min-height: 100vh;
+        }
+        
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        
+        header {
+            background: rgba(22, 33, 62, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 25px 0;
+            border-bottom: 3px solid #e94560;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+        }
+        
+        .logo {
+            font-family: 'Noto Serif KR', serif;
+            font-size: 2rem;
+            font-weight: 700;
+            color: #f4b942;
+            text-align: center;
+        }
+        
+        .price { 
+            text-align: center; 
+            background: linear-gradient(135deg, #e94560, #f4b942);
+            color: white;
+            padding: 10px 25px;
+            border-radius: 30px;
+            display: inline-block;
+            margin: 10px auto;
+            font-weight: 700;
+            font-size: 1.2rem;
+        }
+        
+        .section {
+            background: rgba(22, 33, 62, 0.6);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 16px;
+            padding: 30px;
+            margin: 30px 0;
+        }
+        
+        .section-title {
+            font-family: 'Noto Serif KR', serif;
+            font-size: 1.8rem;
+            color: #f4b942;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid rgba(255,255,255,0.2);
+        }
+        
+        .prof-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .prof-card {
+            background: rgba(255,255,255,0.05);
+            border: 2px solid rgba(255,255,255,0.1);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .prof-card:hover, .prof-card.active {
+            border-color: #e94560;
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(233, 69, 96, 0.3);
+        }
+        
+        .prof-icon { font-size: 2.5rem; margin-bottom: 10px; }
+        .prof-name { font-weight: 600; }
+        
+        .form-group {
+            margin: 20px 0;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #f4b942;
+        }
+        
+        input, select, textarea {
+            width: 100%;
+            padding: 12px;
+            background: rgba(15, 23, 42, 0.7);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 8px;
+            color: #e8e8e8;
+            font-family: 'Noto Sans KR', sans-serif;
+            font-size: 1rem;
+        }
+        
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #e94560;
+        }
+        
+        textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+        
+        .btn {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin: 10px 5px;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #e94560, #f4b942);
+            color: white;
+        }
+        
+        .btn-secondary {
+            background: #3b82f6;
+            color: white;
+        }
+        
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(233, 69, 96, 0.4);
+        }
+        
+        .alert {
+            padding: 20px;
+            border-radius: 12px;
+            margin: 20px 0;
+            display: none;
+        }
+        
+        .alert.show { display: block; }
+        
+        .alert-warning {
+            background: rgba(245, 158, 11, 0.2);
+            border: 2px solid #f59e0b;
+            color: #fbbf24;
+        }
+        
+        .alert-success {
+            background: rgba(16, 185, 129, 0.2);
+            border: 2px solid #10b981;
+            color: #34d399;
+        }
+        
+        .hidden { display: none; }
+        
+        footer {
+            text-align: center;
+            padding: 40px 20px;
+            margin-top: 60px;
+            border-top: 2px solid rgba(255,255,255,0.1);
+            color: #94a3b8;
+        }
+        
+        @media (max-width: 768px) {
+            .prof-grid { grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="logo">⚖️ Justice Navigator</div>
+            <div style="text-align: center;">
+                <span class="price">$10 Legal Service</span>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="alert alert-warning show">
+            <strong>⚠️ 중요:</strong> 본 플랫폼은 문서 작성 보조 도구입니다. 실제 제출 전 반드시 전문가의 검토를 받으세요.
+        </div>
+
+        <div class="section">
+            <h2 class="section-title">1단계: 직종 선택</h2>
+            <div class="prof-grid" id="profGrid"></div>
+        </div>
+
+        <div class="section hidden" id="docSection">
+            <h2 class="section-title">2단계: 문서 작성</h2>
+            
+            <div class="form-group">
+                <label>📄 문서 유형 *</label>
+                <select id="docType">
+                    <option value="">선택하세요</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label>🌍 국가</label>
+                <select id="country">
+                    <option value="KR">🇰🇷 대한민국</option>
+                    <option value="US">🇺🇸 미국</option>
+                    <option value="JP">🇯🇵 일본</option>
+                </select>
+            </div>
+            
+            <div id="fields"></div>
+            
+            <div>
+                <button class="btn btn-primary" onclick="generate()">🚀 문서 생성</button>
+                <button class="btn btn-secondary" onclick="fillExample()">📝 예시 채우기</button>
+            </div>
+        </div>
+
+        <div class="alert alert-success" id="successMsg">
+            <strong>✅ 성공!</strong> 문서가 생성되었습니다.
+            <div style="margin-top: 15px;">
+                <button class="btn btn-secondary" onclick="downloadPDF()">📥 PDF 다운로드</button>
+                <button class="btn btn-secondary" onclick="downloadTXT()">📝 TXT 다운로드</button>
+                <button class="btn btn-secondary" onclick="downloadJSON()">💾 JSON 저장</button>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p style="font-size: 1.1rem; margin-bottom: 10px;">법률 복지의 민주화</p>
+        <p>Created by phil_goose | Designed by Feelsogood^^</p>
+        <p style="margin-top: 20px; font-size: 0.9rem;">© 2026 Justice Navigator</p>
+    </footer>
+
+    <script>
+        // phil_goose & Feelsogood^^
+        let currentProf = '';
+        let docData = {};
+        
+        const profs = {
+            doctor: { icon: '👨‍⚕️', name: '의사', docs: {
+                'diagnosis': '일반 진단서',
+                'disability': '장애진단서',
+                'insurance': '보험용 진단서'
+            }},
+            lawyer: { icon: '👨‍⚖️', name: '변호사', docs: {
+                'complaint': '민사소장',
+                'criminal': '형사고소장',
+                'certified': '내용증명'
+            }},
+            patent: { icon: '💡', name: '변리사', docs: {
+                'patent': '특허출원서',
+                'trademark': '상표등록출원서'
+            }},
+            admin: { icon: '📁', name: '행정사', docs: {
+                'business': '사업자등록신청서',
+                'construction': '건축허가신청서'
+            }},
+            legal: { icon: '📋', name: '법무사', docs: {
+                'realestate': '부동산등기신청서',
+                'corporate': '법인등기신청서'
+            }}
+        };
+        
+        const fields = {
+            diagnosis: [
+                { id: 'hospital', label: '🏥 의료기관명', required: true },
+                { id: 'patientName', label: '👤 환자명', required: true },
+                { id: 'birth', label: '🎂 생년월일', type: 'date', required: true },
+                { id: 'diagnosisName', label: '📋 진단명', required: true },
+                { id: 'icd', label: '🔢 ICD-10 코드' },
+                { id: 'diagDate', label: '📅 진단일', type: 'date', required: true },
+                { id: 'opinion', label: '📝 의사소견', type: 'textarea', required: true },
+                { id: 'doctorName', label: '👨‍⚕️ 의사명', required: true }
+            ],
+            patent: [
+                { id: 'title', label: '💡 발명의 명칭', required: true },
+                { id: 'applicant', label: '👤 출원인', required: true },
+                { id: 'inventor', label: '🔬 발명자', required: true },
+                { id: 'field', label: '📋 기술분야', type: 'textarea', required: true },
+                { id: 'problem', label: '🎯 해결과제', type: 'textarea', required: true },
+                { id: 'solution', label: '💡 해결수단', type: 'textarea', required: true },
+                { id: 'effect', label: '✨ 발명의 효과', type: 'textarea', required: true }
+            ],
+            business: [
+                { id: 'businessName', label: '🏢 상호', required: true },
+                { id: 'ceoName', label: '👤 대표자', required: true },
+                { id: 'address', label: '📍 사업장 주소', required: true },
+                { id: 'phone', label: '📞 전화번호', type: 'tel', required: true },
+                { id: 'openDate', label: '📅 개업일', type: 'date', required: true },
+                { id: 'category', label: '💼 업태', required: true },
+                { id: 'item', label: '🎯 종목', required: true }
+            ],
+            complaint: [
+                { id: 'court', label: '⚖️ 법원명', required: true },
+                { id: 'plaintiff', label: '👤 원고', required: true },
+                { id: 'plaintiffAddr', label: '📍 원고 주소', required: true },
+                { id: 'defendant', label: '👥 피고', required: true },
+                { id: 'defendantAddr', label: '📍 피고 주소', required: true },
+                { id: 'amount', label: '💰 청구금액', required: true },
+                { id: 'purpose', label: '🎯 청구취지', type: 'textarea', required: true },
+                { id: 'cause', label: '📋 청구원인', type: 'textarea', required: true }
+            ],
+            realestate: [
+                { id: 'office', label: '🏢 등기소', required: true },
+                { id: 'purpose', label: '📝 등기목적', required: true },
+                { id: 'propertyAddr', label: '📍 부동산 소재지', required: true },
+                { id: 'area', label: '📏 면적', required: true },
+                { id: 'owner', label: '👤 권리자', required: true },
+                { id: 'obligor', label: '👥 의무자', required: true }
+            ]
+        };
+        
+        const examples = {
+            diagnosis: {
+                hospital: '서울대학교병원',
+                patientName: '홍길동',
+                birth: '1990-01-15',
+                diagnosisName: '급성 상기도 감염',
+                icd: 'J06.9',
+                diagDate: new Date().toISOString().split('T')[0],
+                opinion: '환자는 급성 상기도 감염으로 진단되었으며, 처방된 약물을 규칙적으로 복용하고 3일간 충분한 휴식이 필요함.',
+                doctorName: '김의사'
+            },
+            patent: {
+                title: 'AI 기반 법률 문서 자동 생성 시스템',
+                applicant: '(주)저스티스네비게이터',
+                inventor: 'phil_goose',
+                field: '본 발명은 인공지능 자연어처리 기술을 활용한 법률 문서 자동 생성 시스템에 관한 것이다.',
+                problem: '종래의 법률 문서 작성은 전문가의 지식이 필요하고 비용이 높아 일반인의 접근이 어려웠다.',
+                solution: '사용자의 직종과 문서 유형에 따라 동적으로 입력 양식을 생성하고 AI가 전문적인 법률 문서를 자동으로 작성한다.',
+                effect: '일반인도 10분 이내에 전문적인 법률 문서를 작성할 수 있으며, 비용을 99% 이상 절감할 수 있다.'
+            },
+            business: {
+                businessName: '(주)테크놀로지',
+                ceoName: '이창업',
+                address: '서울시 강남구 테헤란로 123',
+                phone: '02-1234-5678',
+                openDate: new Date(Date.now() + 30*24*60*60*1000).toISOString().split('T')[0],
+                category: '서비스업',
+                item: '소프트웨어 개발'
+            },
+            complaint: {
+                court: '서울중앙지방법원',
+                plaintiff: '김원고',
+                plaintiffAddr: '서울시 강남구 역삼동 123',
+                defendant: '박피고',
+                defendantAddr: '서울시 서초구 서초동 456',
+                amount: '금 10,000,000원',
+                purpose: '1. 피고는 원고에게 금 10,000,000원을 지급하라.\n2. 소송비용은 피고의 부담으로 한다.',
+                cause: '원고와 피고는 2024년 10월 1일 용역계약을 체결하였으나, 피고가 대금을 지급하지 않아 이 사건 소를 제기한다.'
+            },
+            realestate: {
+                office: '서울중앙지방법원 등기국',
+                purpose: '소유권이전',
+                propertyAddr: '서울시 강남구 역삼동 123-45',
+                area: '85.5㎡',
+                owner: '김구매',
+                obligor: '이판매'
+            }
+        };
+        
+        function init() {
+            const grid = document.getElementById('profGrid');
+            Object.keys(profs).forEach(key => {
+                const p = profs[key];
+                const div = document.createElement('div');
+                div.className = 'prof-card';
+                div.onclick = () => selectProf(key);
+                div.innerHTML = `<div class="prof-icon">${p.icon}</div><div class="prof-name">${p.name}</div>`;
+                grid.appendChild(div);
+            });
+        }
+        
+        function selectProf(key) {
+            currentProf = key;
+            document.querySelectorAll('.prof-card').forEach(c => c.classList.remove('active'));
+            event.target.closest('.prof-card').classList.add('active');
+            
+            const select = document.getElementById('docType');
+            select.innerHTML = '<option value="">선택하세요</option>';
+            Object.keys(profs[key].docs).forEach(dKey => {
+                const opt = document.createElement('option');
+                opt.value = dKey;
+                opt.textContent = profs[key].docs[dKey];
+                select.appendChild(opt);
+            });
+            
+            document.getElementById('docSection').classList.remove('hidden');
+        }
+        
+        document.getElementById('docType').onchange = function() {
+            const type = this.value;
+            if (!type) return;
+            
+            const container = document.getElementById('fields');
+            container.innerHTML = '';
+            
+            if (fields[type]) {
+                fields[type].forEach(f => {
+                    const div = document.createElement('div');
+                    div.className = 'form-group';
+                    div.innerHTML = `
+                        <label>${f.label} ${f.required ? '*' : ''}</label>
+                        ${f.type === 'textarea' ? 
+                            `<textarea id="${f.id}" ${f.required ? 'required' : ''}></textarea>` :
+                            `<input type="${f.type || 'text'}" id="${f.id}" ${f.required ? 'required' : ''}>`
+                        }
+                    `;
+                    container.appendChild(div);
+                });
+            }
+        };
+        
+        function fillExample() {
+            const type = document.getElementById('docType').value;
+            if (!type || !examples[type]) {
+                alert('먼저 문서 유형을 선택하세요!');
+                return;
+            }
+            Object.keys(examples[type]).forEach(key => {
+                const el = document.getElementById(key);
+                if (el) el.value = examples[type][key];
+            });
+            alert('✅ 예시가 입력되었습니다!');
+        }
+        
+        function generate() {
+            const type = document.getElementById('docType').value;
+            if (!type) {
+                alert('문서 유형을 선택하세요!');
+                return;
+            }
+            
+            docData = {
+                profession: currentProf,
+                professionName: profs[currentProf].name,
+                docType: type,
+                docTypeName: profs[currentProf].docs[type],
+                country: document.getElementById('country').value,
+                date: new Date().toLocaleString('ko-KR'),
+                _creator: 'phil_goose',
+                _designer: 'Feelsogood^^',
+                fields: {}
+            };
+            
+            if (fields[type]) {
+                fields[type].forEach(f => {
+                    const el = document.getElementById(f.id);
+                    if (el) {
+                        if (f.required && !el.value.trim()) {
+                            alert(`${f.label} 항목을 입력하세요!`);
+                            el.focus();
+                            throw new Error('Required field missing');
+                        }
+                        docData.fields[f.id] = el.value;
+                    }
+                });
+            }
+            
+            document.getElementById('successMsg').classList.add('show');
+            document.getElementById('successMsg').scrollIntoView({ behavior: 'smooth' });
+        }
+        
+        function downloadPDF() {
+            if (!docData.docType) {
+                alert('먼저 문서를 생성하세요!');
+                return;
+            }
+            
+            try {
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF();
+                
+                let y = 20;
+                doc.setFontSize(20);
+                doc.text(docData.docTypeName, 105, y, { align: 'center' });
+                
+                y += 15;
+                doc.setFontSize(11);
+                doc.text(`Profession: ${docData.professionName}`, 20, y);
+                y += 7;
+                doc.text(`Country: ${docData.country}`, 20, y);
+                y += 7;
+                doc.text(`Date: ${docData.date}`, 20, y);
+                y += 15;
+                
+                Object.keys(docData.fields).forEach(key => {
+                    if (y > 270) {
+                        doc.addPage();
+                        y = 20;
+                    }
+                    doc.setFont('helvetica', 'bold');
+                    doc.text(`${key}:`, 20, y);
+                    y += 7;
+                    doc.setFont('helvetica', 'normal');
+                    const lines = doc.splitTextToSize(String(docData.fields[key]), 170);
+                    lines.forEach(line => {
+                        if (y > 270) {
+                            doc.addPage();
+                            y = 20;
+                        }
+                        doc.text(line, 25, y);
+                        y += 7;
+                    });
+                    y += 3;
+                });
+                
+                doc.setFontSize(9);
+                doc.setTextColor(128);
+                doc.text('Created by phil_goose & Feelsogood^^', 105, 285, { align: 'center' });
+                
+                doc.save(`${docData.docTypeName}_${Date.now()}.pdf`);
+            } catch (e) {
+                console.error(e);
+                alert('PDF 생성 오류: ' + e.message);
+            }
+        }
+        
+        function downloadTXT() {
+            if (!docData.docType) {
+                alert('먼저 문서를 생성하세요!');
+                return;
+            }
+            
+            let txt = '='.repeat(80) + '\n';
+            txt += docData.docTypeName + '\n';
+            txt += '='.repeat(80) + '\n\n';
+            txt += `직종: ${docData.professionName}\n`;
+            txt += `국가: ${docData.country}\n`;
+            txt += `작성일: ${docData.date}\n\n`;
+            txt += '-'.repeat(80) + '\n\n';
+            
+            Object.keys(docData.fields).forEach(key => {
+                txt += `【${key}】\n${docData.fields[key]}\n\n`;
+            });
+            
+            txt += '-'.repeat(80) + '\n';
+            txt += 'Justice Navigator | phil_goose & Feelsogood^^\n';
+            txt += '실제 제출 전 전문가 검토 필수\n';
+            
+            const blob = new Blob([txt], { type: 'text/plain;charset=utf-8' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = `${docData.docTypeName}_${Date.now()}.txt`;
+            a.click();
+        }
+        
+        function downloadJSON() {
+            if (!docData.docType) {
+                alert('먼저 문서를 생성하세요!');
+                return;
+            }
+            
+            const json = JSON.stringify(docData, null, 2);
+            const blob = new Blob([json], { type: 'application/json' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = `${docData.docTypeName}_${Date.now()}.json`;
+            a.click();
+        }
+        
+        window.onload = init;
+        console.log('%c Justice Navigator ', 'background: #e94560; color: #fff; padding: 10px;');
+        console.log('%c phil_goose & Feelsogood^^ ', 'color: #f4b942;');
+    </script>
+</body>
+</html>
